@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form API dengan Bootstrap</title>
+
+    <!-- Memasukkan link CSS Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container">
+
+    <h2 class="mt-3">Pilih Provinsi, Kabupaten/Kota, Kecamatan, dan Kelurahan/Desa</h2>
+
+    <form>
+        <div class="mb-3">
+            <label for="provinsi" class="form-label">Provinsi:</label>
+            <select id="provinsi" name="provinsi" class="form-select"></select>
+        </div>
+        <div class="mb-3">
+            <label for="kabupaten" class="form-label">Kabupaten/Kota:</label>
+            <select id="kabupaten" name="kabupaten" class="form-select"></select>
+        </div>
+        <div class="mb-3">
+            <label for="kecamatan" class="form-label">Kecamatan:</label>
+            <select id="kecamatan" name="kecamatan" class="form-select"></select>
+        </div>
+        <div class="mb-3">
+            <label for="desa" class="form-label">Kelurahan/Desa:</label>
+            <select id="desa" name="desa" class="form-select"></select>
+        </div>
+    </form>
+
+    <!-- Memasukkan link JavaScript Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function fetchProvinces() {
+            const apiUrlProvinces = 'https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json';
+
+            fetch(apiUrlProvinces)
+                .then(response => response.json())
+                .then(provinces => {
+                    const provinsiDropdown = document.getElementById('provinsi');
+
+                    provinces.forEach(province => {
+                        const option = document.createElement('option');
+                        option.value = province.id;
+                        option.text = province.name;
+                        provinsiDropdown.appendChild(option);
+                    });
+
+                    // Setelah mendapatkan provinsi, panggil fungsi untuk mengisi kabupaten/kota
+                    provinsiDropdown.addEventListener('change', fetchRegencies);
+                })
+                .catch(error => console.error('Error fetching provinces:', error));
+        }
+
+        function fetchRegencies() {
+            const selectedProvinceId = document.getElementById('provinsi').value;
+            const apiUrlRegencies = `https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${selectedProvinceId}.json`;
+
+            fetch(apiUrlRegencies)
+                .then(response => response.json())
+                .then(regencies => {
+                    const kabupatenDropdown = document.getElementById('kabupaten');
+                    kabupatenDropdown.innerHTML = '<option value="" selected disabled>Pilih Kabupaten/Kota</option>';
+
+                    regencies.forEach(regency => {
+                        const option = document.createElement('option');
+                        option.value = regency.id;
+                        option.text = regency.name;
+                        kabupatenDropdown.appendChild(option);
+                    });
+
+                    // Setelah mendapatkan kabupaten/kota, panggil fungsi untuk mengisi kecamatan
+                    kabupatenDropdown.addEventListener('change', fetchDistricts);
+                })
+                .catch(error => console.error('Error fetching regencies:', error));
+        }
+
+        function fetchDistricts() {
+            const selectedRegencyId = document.getElementById('kabupaten').value;
+            const apiUrlDistricts = `https://www.emsifa.com/api-wilayah-indonesia/api/districts/${selectedRegencyId}.json`;
+
+            fetch(apiUrlDistricts)
+                .then(response => response.json())
+                .then(districts => {
+                    const kecamatanDropdown = document.getElementById('kecamatan');
+                    kecamatanDropdown.innerHTML = '<option value="" selected disabled>Pilih Kecamatan</option>';
+
+                    districts.forEach(district => {
+                        const option = document.createElement('option');
+                        option.value = district.id;
+                        option.text = district.name;
+                        kecamatanDropdown.appendChild(option);
+                    });
+
+                    // Setelah mendapatkan kecamatan, panggil fungsi untuk mengisi desa
+                    kecamatanDropdown.addEventListener('change', fetchVillages);
+                })
+                .catch(error => console.error('Error fetching districts:', error));
+        }
+
+        function fetchVillages() {
+            const selectedDistrictId = document.getElementById('kecamatan').value;
+            const apiUrlVillages = `https://www.emsifa.com/api-wilayah-indonesia/api/villages/${selectedDistrictId}.json`;
+
+            fetch(apiUrlVillages)
+                .then(response => response.json())
+                .then(villages => {
+                    const desaDropdown = document.getElementById('desa');
+                    desaDropdown.innerHTML = '<option value="" selected disabled>Pilih Desa</option>';
+
+                    villages.forEach(village => {
+                        const option = document.createElement('option');
+                        option.value = village.id;
+                        option.text = village.name;
+                        desaDropdown.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching villages:', error));
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchProvinces);
+    </script>
+
+</body>
+</html>
